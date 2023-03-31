@@ -33,6 +33,14 @@ export class NinjaKeys extends LitElement {
    */
   @property({type: Boolean}) hideBreadcrumbs = false;
 
+
+  /**
+   * add missing parameter
+   */
+  @property() breadcrumbHome = false;
+
+  
+
   /**
    * Open or hide shorcut
    */
@@ -159,11 +167,13 @@ export class NinjaKeys extends LitElement {
     const path: string[] = [];
     let parentAction = this._selected?.parent;
     if (parentAction) {
-      path.push(parentAction);
+      let _parentAction = this._flatData.find((a) => a.id === parentAction);
+          if(_parentAction) path.push(_parentAction.title);
       while (parentAction) {
         const action = this._flatData.find((a) => a.id === parentAction);
         if (action?.parent) {
-          path.push(action.parent);
+          let _parent = this._flatData.find((a) => a.id === action.parent);
+          if(_parent) path.push(_parent.title);
         }
         parentAction = action ? action.parent : undefined;
       }
@@ -234,6 +244,7 @@ export class NinjaKeys extends LitElement {
   }
 
   private _registerInternalHotkeys() {
+    hotkeys.filter = _event => true
     if (this.openHotkey) {
       hotkeys(this.openHotkey, (event) => {
         event.preventDefault();
@@ -359,9 +370,9 @@ export class NinjaKeys extends LitElement {
     };
 
     const actionMatches = this._flatData.filter((action) => {
-      const regex = new RegExp(this._search, 'gi');
+      const regex = new RegExp(this._search.toLocaleLowerCase('tr-TR'), 'gi');
       const matcher =
-        action.title.match(regex) || action.keywords?.match(regex);
+        action.title.toLocaleLowerCase('tr-TR').match(regex) || action.keywords?.toLocaleLowerCase('tr-TR').match(regex);
 
       if (!this._currentRoot && this._search) {
         // global search for items on root
@@ -418,6 +429,7 @@ export class NinjaKeys extends LitElement {
             exportparts="ninja-input,ninja-input-wrapper"
             ${ref(this._headerRef)}
             .placeholder=${this.placeholder}
+            .breadcrumbHome=${this.breadcrumbHome}
             .hideBreadcrumbs=${this.hideBreadcrumbs}
             .breadcrumbs=${this.breadcrumbs}
             @change=${this._handleInput}
